@@ -34,32 +34,85 @@ export const categoryLabels = {
 
 export async function searchMeals(query = '', category = '', area = '') {
   try {
-    const res = await fetch(`${apiBase}/search.php?s=${encodeURIComponent(query)}`)
+    const cleanQuery = query.trim()
+    if(cleanQuery){
+      const res = await fetch(`${apiBase}/search.php?s=${encodeURIComponent(cleanQuery)}`)
+      const data = await res.json()
+      let meals = data.meals || []
+      if(category) {
+        meals = meals.filter(meal => meal.strCategory === category)
+      }
+      if(area) {
+        meals = meals.filter(meal => meal.strArea === area || meal.strCountry === area)
+      }
+      return meals
+    }
+
+    if (category && area) {
+      const catMeals = await getMealsByCategory(category)
+      const areaMeals = await getMealsByArea(area)
+      const areaIds = areaMeals.map((meal) => meal.idMeal)
+      return catMeals
+        .filter((meal) => areaIds.includes(meal.idMeal))
+        .map((meal) => ({ ...meal, strCategory: category, strArea: area }))
+    }
+
+    if (category) {
+      return await getMealsByCategory(category)
+    }
+
+    if (area) {
+      return await getMealsByArea(area)
+    }
+
+    const res = await fetch(`${apiBase}/search.php?s=`)
     const data = await res.json()
-    let meals = data.meals || []
-    if(category) {
-      meals = meals.filter(meal => meal.strCategory === category)
-    }
-    if(area) {
-      meals = meals.filter(meal => meal.strArea === area)
-    }
-    return meals
+    return data.meals || []
+
   } catch(e){
     console.error('Erro ao buscar receitas:', e)
-    return []
+    return { error: true }
   }
 }
 
-export async function getMealById(id) {
-  const res = await fetch(`${apiBase}/lookup.php?i=${encodeURIComponent(id)}`)
+export async function getMealsByCategory(category) {
+  const res = await fetch(`${apiBase}/filter.php?c=${encodeURIComponent(category)}`)
   const data = await res.json()
-  return data.meals ? refactorMeal(data.meals[0]) : null
+  return (data.meals || []).map((meal) => ({
+    ...meal,
+    strCategory: category,
+  }))
+}
+
+export async function getMealsByArea(area) {
+  const res = await fetch(`${apiBase}/filter.php?a=${encodeURIComponent(area)}`)
+  const data = await res.json()
+  return (data.meals || []).map((meal) => ({
+    ...meal,
+    strArea: area,
+  }))
+}
+
+export async function getMealById(id) {
+  try {
+    const res = await fetch(`${apiBase}/lookup.php?i=${encodeURIComponent(id)}`)
+    const data = await res.json()
+    return data.meals ? refactorMeal(data.meals[0]) : null
+  } catch(e){
+    console.error('Erro ao fazer a busca por ID: ', e)
+    return { error: true }
+  }
 }
 
 export async function getRandomMeal() {
-  const res = await fetch(`${apiBase}/random.php`)
-  const data = await res.json()
-  return data.meals ? refactorMeal(data.meals[0]) : null
+  try {
+    const res = await fetch(`${apiBase}/random.php`)
+    const data = await res.json()
+    return data.meals ? refactorMeal(data.meals[0]) : null
+  } catch(e){
+    console.error('Erro ao fazer busca aleatória: ', e)
+    return { error: true }
+  }
 }
 
 export function refactorMeal(meal) {
@@ -85,7 +138,7 @@ export function refactorMeal(meal) {
         .split(/\r?\n/)
         .map((line) => line.trim())
         .filter((line) => line !== '' && !/^(step\s*)?\d+\.?$/i.test(line))
-        .map((line) => line.replace(/^(step\s*)?\d+[\.\)\-:]\s*/i, ''))
+        .map((line) => line.replace(/^(step\s*)?\d+[.):-]\s*/i, ''))
     : []
 
   return {
