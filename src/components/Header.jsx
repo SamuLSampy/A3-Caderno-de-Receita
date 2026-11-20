@@ -2,13 +2,15 @@ import { Link } from 'react-router-dom'
 import { Sparkles } from 'lucide-react'
 import logoImg from '../assets/logo.png'
 import { getRandomMeal } from '../services/mealApi'
+import { useNavigate } from 'react-router-dom'
 
 function Header() {
+  const navigate = useNavigate()
 
   function goToRandomRecipe(){
     getRandomMeal().then((mealData) => {
       if(mealData && mealData.idMeal){
-        window.location.href = `/recipe/${mealData.idMeal}`
+        navigate(`/recipe/${mealData.idMeal}`)
       }
     })
   }
