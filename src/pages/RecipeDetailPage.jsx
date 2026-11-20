@@ -1,8 +1,11 @@
 import { Link } from 'react-router-dom'
 import { useParams } from 'react-router-dom'
-import { getMealById } from '../services/mealApi'
 import { useEffect, useState } from 'react'
 import {ExternalLink} from 'lucide-react'
+
+import { getMealById } from '../services/mealApi'
+
+import ErrorMessage from '../components/ErrorMessage'
 
 function RecipeDetailPage() {
   const [meal, setMeal] = useState(null)
@@ -21,6 +24,12 @@ function RecipeDetailPage() {
       <main className="main-content">
         <p>Carregando receita...</p>
       </main>
+    )
+  }
+
+  if (meal.error) {
+    return (
+      <ErrorMessage title={"Não foi possível carregar as receitas"} message={"Ocorreu um erro ao se comunicar com o serviço TheMealDB. Verifique sua conexão e tente novamente."} />
     )
   }
 
@@ -49,13 +58,13 @@ function RecipeDetailPage() {
             <div className="recipe-info-text">
               <div className="recipe-tags">
                 <Link to={`/?categoria=${meal.strCategory}`} className="recipe-category-tag">{meal.strCategory}</Link>
-                <Link to={`/?origem=${meal.strCountry}`} className="recipe-origin-tag">{meal.strCountry}</Link>
+                <Link to={`/?origem=${meal.strArea || meal.strCountry}`} className="recipe-origin-tag">{meal.strCountry}</Link>
               </div>
               <h1 className="recipe-title">{meal.strMeal}</h1>
-              <p className="recipe-counts">{meal.ingredients.length} ingredientes • {meal.instructions.length} de preparo</p>
+              <p className="recipe-counts">{meal.ingredients.length} ingredientes • {meal.instructions.length} passos de preparo</p>
               <div>
-                <a href={meal.strYoutube} target="_blank" rel="noopener noreferrer" className="youtube-button">Assistir no YouTube <ExternalLink /></a>
-                <a href={meal.strSource} target="_blank" rel="noopener noreferrer" className="youtube-button">Fonte Original <ExternalLink /></a>
+                {meal.strYoutube && <a href={meal.strYoutube} target="_blank" rel="noopener noreferrer" className="youtube-button">Assistir no YouTube <ExternalLink /></a>}
+                {meal.strSource && <a href={meal.strSource} target="_blank" rel="noopener noreferrer" className="youtube-button">Fonte Original <ExternalLink /></a>}
               </div>
             </div>
           </div>

@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { searchMeals } from '../services/mealApi'
+
 import MealCard from '../components/MealCard'
 import Search from '../components/Search'
-import { searchMeals } from '../services/mealApi'
+import NotFoundRecipe from '../components/NotFoundRecipe'
+import ErrorMessage from '../components/ErrorMessage'
 
 function HomePage() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -10,17 +13,24 @@ function HomePage() {
   const category = searchParams.get('categoria') || ''
   const area = searchParams.get('origem') || ''
 
+
   const [meals, setMeals] = useState([])
   const [visibleCount, setVisibleCount] = useState(12)
-  const visibleMeals = meals.slice(0, visibleCount)
+  const visibleMeals = Array.isArray(meals) ? meals.slice(0, visibleCount) : []
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    searchMeals(query, category, area).then((dados) => {
-      console.log('Receitas encontradas: ', dados)
-      console.log('Parâmetros de busca: ', { query, category, area })
-      setMeals(dados)
-      setVisibleCount(12)
-    })
+    async function loadMeals() {
+      setLoading(true)
+      searchMeals(query, category, area).then((dados) => {
+        console.log('Receitas encontradas: ', dados)
+        console.log('Parâmetros de busca: ', { query, category, area })
+        setMeals(dados)
+        setVisibleCount(12)
+        setLoading(false)
+      })
+    }
+    loadMeals()
   }, [query, category, area])
 
   function updateFilters(newQuery, newCategory, newArea) {
@@ -49,8 +59,11 @@ function HomePage() {
         onCategoryChange={(nextCategory) => updateFilters(query, nextCategory, area)}
         onAreaChange={(nextArea) => updateFilters(query, category, nextArea)}
       />
-
+        {meals.error && (
+          <ErrorMessage title={"Não foi possível carregar as receitas"} message={"Ocorreu um erro ao se comunicar com o serviço TheMealDB. Verifique sua conexão e tente novamente."} />
+        )}
       <div className="result-container">
+        {meals.length === 0 && !loading && <NotFoundRecipe/>}
         <p>{meals.length} receitas encontradas</p>
         <div className="cards-grid">
           {visibleMeals.map((meal) => (
