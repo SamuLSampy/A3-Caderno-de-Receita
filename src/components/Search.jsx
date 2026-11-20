@@ -1,3 +1,6 @@
+import {verifiedAreas} from '../services/mealApi'
+import {categoryLabels} from '../services/mealApi'
+
 function Search(){
     return(
         <div className="search-and-filters">
@@ -11,7 +14,14 @@ function Search(){
             <div className="origin-container">
                 <p>Culinária / Origem</p>
                 <div>
-                    <input type="text" placeholder="Ex: Brazil, Italian..." />
+                    <select>
+                        <option value="all">Todas as culinárias</option>
+                        {verifiedAreas.map((areaName) => (
+                            <option key={areaName} value={areaName}>
+                                {areaName}
+                            </option>
+                        ))}
+                    </select>
                 </div>
             </div>
             <p className="text-gray">Dica: a base TheMealDB indexa títulos em inglês (ex.: chicken, pasta, cake).</p>
@@ -19,14 +29,13 @@ function Search(){
                 <p>Filtrar por categoria</p>
                 <div className="filters-buttons">
                     <button className="filter-button">Todas</button>
-                    <button className="filter-button">Carne bovina</button>
-                    <button className="filter-button">Frango</button>
-                    <button className="filter-button">Sobremesas</button>
-                    <button className="filter-button">Massas</button>
-                    <button className="filter-button">Frutos do mar</button>
-                    <button className="filter-button"> Vegetariano</button>
-                    <button className="filter-button">Vegano</button>
-                    <button className="filter-button">Café da manhã</button>
+                    {
+                        Object.entries(categoryLabels).map(([key, label]) => (
+                            <button key={key} className="filter-button">
+                                {label}
+                            </button>
+                        ))
+                    }
                 </div>
             </div>
         </div>
