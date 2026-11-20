@@ -16,11 +16,20 @@ function HomePage() {
 
   useEffect(() => {
     searchMeals(query, category, area).then((dados) => {
-      console.log('Receitas encontradas:', dados)
-      console.log('Parâmetros de busca:', { query, category, area })
-        setMeals(dados)
+      console.log('Receitas encontradas: ', dados)
+      console.log('Parâmetros de busca: ', { query, category, area })
+      setMeals(dados)
+      setVisibleCount(12)
     })
-  }, [])
+  }, [query, category, area])
+
+  function updateFilters(newQuery, newCategory, newArea) {
+    const newParams = new URLSearchParams()
+    if (newQuery) newParams.set('q', newQuery)
+    if (newCategory) newParams.set('categoria', newCategory)
+    if (newArea) newParams.set('origem', newArea)
+    setSearchParams(newParams)
+  }
 
   return (
     <main className="main-content">
@@ -32,7 +41,14 @@ function HomePage() {
         </p>
       </div>
 
-      <Search />
+      <Search 
+        query={query}
+        category={category}
+        area={area}
+        onSearch={(nextQuery) => updateFilters(nextQuery, category, area)}
+        onCategoryChange={(nextCategory) => updateFilters(query, nextCategory, area)}
+        onAreaChange={(nextArea) => updateFilters(query, category, nextArea)}
+      />
 
       <div className="result-container">
         <p>{meals.length} receitas encontradas</p>
