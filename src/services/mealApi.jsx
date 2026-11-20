@@ -50,32 +50,47 @@ export async function searchMeals(query = '', category = '', area = '') {
   }
 }
 
-export async function getCategories() {
-  const res = await fetch(`${apiBase}/categories.php`)
-  const data = await res.json()
-  return data.categories || []
-}
-
-export async function getMealsByCategory(category) {
-  const res = await fetch(`${apiBase}/filter.php?c=${encodeURIComponent(category)}`)
-  const data = await res.json()
-  return data.meals || []
-}
-
-export async function getMealsByArea(area) {
-  const res = await fetch(`${apiBase}/filter.php?a=${encodeURIComponent(area)}`)
-  const data = await res.json()
-  return data.meals || []
-}
-
 export async function getMealById(id) {
   const res = await fetch(`${apiBase}/lookup.php?i=${encodeURIComponent(id)}`)
   const data = await res.json()
-  return data.meals ? data.meals[0] : null
+  return data.meals ? refactorMeal(data.meals[0]) : null
 }
 
 export async function getRandomMeal() {
   const res = await fetch(`${apiBase}/random.php`)
   const data = await res.json()
-  return data.meals ? data.meals[0] : null
+  return data.meals ? refactorMeal(data.meals[0]) : null
+}
+
+export function refactorMeal(meal) {
+  if (!meal) return null
+
+  const ingredients = []
+
+  for (let i = 1; i <= 20; i++) {
+    const ingredient = meal[`strIngredient${i}`]?.trim()
+    const measure = meal[`strMeasure${i}`]?.trim()
+
+    if (ingredient) {
+      ingredients.push({
+        ingredient,
+        measure: measure || '',
+        fullText: measure ? `${measure} ${ingredient}` : ingredient,
+      })
+    }
+  }
+
+  const instructions = meal.strInstructions
+    ? meal.strInstructions
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter((line) => line !== '' && !/^(step\s*)?\d+\.?$/i.test(line))
+        .map((line) => line.replace(/^(step\s*)?\d+[\.\)\-:]\s*/i, ''))
+    : []
+
+  return {
+    ...meal,
+    ingredients,
+    instructions,
+  }
 }
