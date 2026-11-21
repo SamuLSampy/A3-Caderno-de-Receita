@@ -1,6 +1,6 @@
 # Caderno de Receitas — Projeto A3 (Grupo 9)
 
-Aplicação web desenvolvida em **React** para o Projeto A3 (**Front-end React + Usabilidade/Acessibilidade**), consumindo a API pública **TheMealDB** com foco na aplicação prática das **Heurísticas de Nielsen** e critérios de acessibilidade da **WCAG**.
+Aplicação web desenvolvida em **React** para o Projeto A3 (**Usabilidade, desenvolvimento web, mobile e jogos**), consumindo a API pública **TheMealDB** com foco na aplicação prática das **Heurísticas de Nielsen** e critérios de acessibilidade da **WCAG**.
 
 - **Deploy:** [https://a3-caderno-de-receita.vercel.app/](https://a3-caderno-de-receita.vercel.app/)
 
